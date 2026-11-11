@@ -1,74 +1,87 @@
-import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Boton } from './Boton';
 
 interface RejillaBotonesProps {
-  onPressNumber: (num: string) => void;
-  onPressOperator: (op: string) => void;
-  onPressClear: () => void;
-  onPressBackspace: () => void;
-  onPressEquals: () => void;
-  onPressDecimal: () => void;
-  onPressScientific: (func: string) => void;
+  onInputDigit: (digit: string) => void;
+  onInputDecimal: () => void;
+  onPerformOperation: (op: string) => void;
+  onClearAll: () => void;
+  onClearEntry: () => void;
+  onBackspace: () => void;
+  onHandleEqual: () => void;
+  onHandleScientific: (func: string) => void;
+  onToggleSign: () => void;
+  onHandlePercent: () => void;
 }
 
 export function RejillaBotones({
-  onPressNumber,
-  onPressOperator,
-  onPressClear,
-  onPressBackspace,
-  onPressEquals,
-  onPressDecimal,
-  onPressScientific,
+  onInputDigit,
+  onInputDecimal,
+  onPerformOperation,
+  onClearAll,
+  onClearEntry,
+  onBackspace,
+  onHandleEqual,
+  onHandleScientific,
+  onToggleSign,
+  onHandlePercent,
 }: RejillaBotonesProps) {
   return (
-    <View style={styles.grid}>
+    <View style={styles.keypadContainer}>
+      {/* Fila 1: %, CE, C, ⌫ */}
       <View style={styles.row}>
-        <Boton text="C" onPress={onPressClear} type="action" />
-        <Boton text="⌫" onPress={onPressBackspace} type="action" />
-        <Boton text="√" onPress={() => onPressScientific('sqrt')} type="action" />
-        <Boton text="1/x" onPress={() => onPressScientific('fraction')} type="action" />
+        <Boton text="%" onPress={onHandlePercent} type="action" />
+        <Boton text="CE" onPress={onClearEntry} type="action" />
+        <Boton text="C" onPress={onClearAll} type="action" />
+        <Boton text="⌫" onPress={onBackspace} type="action" />
       </View>
 
+      {/* Fila 2: 1/x, x², ²√x, División */}
       <View style={styles.row}>
-        <Boton text="x²" onPress={() => onPressScientific('square')} type="action" />
-        <Boton text="%" onPress={() => onPressOperator('%')} type="action" />
-        <Boton text="÷" onPress={() => onPressOperator('÷')} type="operator" />
-        <Boton text="×" onPress={() => onPressOperator('×')} type="operator" />
+        <Boton text="1/x" onPress={() => onHandleScientific('reciprocal')} type="action" />
+        <Boton text="x²" onPress={() => onHandleScientific('square')} type="action" />
+        <Boton text="²√x" onPress={() => onHandleScientific('sqrt')} type="action" />
+        <Boton text="÷" onPress={() => onPerformOperation('÷')} type="operator" />
       </View>
 
+      {/* Fila 3: 7, 8, 9, Multiplicación */}
       <View style={styles.row}>
-        <Boton text="7" onPress={() => onPressNumber('7')} />
-        <Boton text="8" onPress={() => onPressNumber('8')} />
-        <Boton text="9" onPress={() => onPressNumber('9')} />
-        <Boton text="-" onPress={() => onPressOperator('-')} type="operator" />
+        <Boton text="7" onPress={() => onInputDigit('7')} />
+        <Boton text="8" onPress={() => onInputDigit('8')} />
+        <Boton text="9" onPress={() => onInputDigit('9')} />
+        <Boton text="×" onPress={() => onPerformOperation('×')} type="operator" />
       </View>
 
+      {/* Fila 4: 4, 5, 6, Resta */}
       <View style={styles.row}>
-        <Boton text="4" onPress={() => onPressNumber('4')} />
-        <Boton text="5" onPress={() => onPressNumber('5')} />
-        <Boton text="6" onPress={() => onPressNumber('6')} />
-        <Boton text="+" onPress={() => onPressOperator('+')} type="operator" />
+        <Boton text="4" onPress={() => onInputDigit('4')} />
+        <Boton text="5" onPress={() => onInputDigit('5')} />
+        <Boton text="6" onPress={() => onInputDigit('6')} />
+        <Boton text="-" onPress={() => onPerformOperation('-')} type="operator" />
       </View>
 
+      {/* Fila 5: 1, 2, 3, Suma */}
       <View style={styles.row}>
-        <Boton text="1" onPress={() => onPressNumber('1')} />
-        <Boton text="2" onPress={() => onPressNumber('2')} />
-        <Boton text="3" onPress={() => onPressNumber('3')} />
-        <Boton text="=" onPress={onPressEquals} type="equal" />
+        <Boton text="1" onPress={() => onInputDigit('1')} />
+        <Boton text="2" onPress={() => onInputDigit('2')} />
+        <Boton text="3" onPress={() => onInputDigit('3')} />
+        <Boton text="+" onPress={() => onPerformOperation('+')} type="operator" />
       </View>
 
+      {/* Fila 6: ±, 0, Coma, Igual */}
       <View style={styles.row}>
-        <Boton text="0" onPress={() => onPressNumber('0')} style={{ flex: 2, aspectRatio: undefined, height: 68 }} />
-        <Boton text="." onPress={onPressDecimal} />
+        <Boton text="±" onPress={onToggleSign} />
+        <Boton text="0" onPress={() => onInputDigit('0')} />
+        <Boton text="," onPress={onInputDecimal} />
+        <Boton text="=" onPress={onHandleEqual} type="equal" />
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  grid: {
-    width: '100%',
+  keypadContainer: {
+    paddingBottom: 20,
   },
   row: {
     flexDirection: 'row',
