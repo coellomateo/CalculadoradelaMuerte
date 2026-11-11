@@ -1,119 +1,169 @@
 import { useState } from 'react';
+import { Vibration } from 'react-native';
 
 export function useCalculator() {
-  const [displayValue, setDisplayValue] = useState('0');
-  const [firstOperand, setFirstOperand] = useState<number | null>(null);
-  const [operator, setOperator] = useState<string | null>(null);
-  const [waitingForSecondOperand, setWaitingForSecondOperand] = useState(false);
-  const [history, setHistory] = useState(''); // Estado para la bitácora de operaciones
+  const [display, setDisplay] = useState('0');
+  const [expression, setExpression] = useState('');
 
-  const handleNumber = (num: string) => {
-    if (waitingForSecondOperand) {
-      setDisplayValue(num);
-      setWaitingForSecondOperand(false);
+  const triggerHaptic = () => {
+    try {
+      Vibration.vibrate(35);
+    } catch (e) {}
+  };
+
+  const clearAll = () => {
+    triggerHaptic();
+    setDisplay('0');
+    setExpression('');
+  };
+
+  const clearEntry = () => {
+    triggerHaptic();
+    setDisplay('0');
+  };
+
+  const backspace = () => {
+    triggerHaptic();
+    if (display.length > 1) {
+      setDisplay(display.slice(0, -1));
     } else {
-      setDisplayValue(displayValue === '0' ? num : displayValue + num);
+      setDisplay('0');
     }
   };
 
-  const handleDecimal = () => {
-    if (waitingForSecondOperand) {
-      setDisplayValue('0.');
-      setWaitingForSecondOperand(false);
-      return;
-    }
-    if (!displayValue.includes('.')) {
-      setDisplayValue(displayValue + '.');
+  const inputDigit = (digit: string) => {
+    triggerHaptic();
+    setDisplay(display === '0' ? digit : display + digit);
+  };
+
+  const inputDecimal = () => {
+    triggerHaptic();
+    if (!display.includes('.')) {
+      setDisplay(display + '.');
     }
   };
 
-  const handleClear = () => {
-    setDisplayValue('0');
-    setFirstOperand(null);
-    setOperator(null);
-    setWaitingForSecondOperand(false);
-    setHistory('');
+  const toggleSign = () => {
+    triggerHaptic();
+    if (display === '0') return;
+    setDisplay(display.startsWith('-') ? display.slice(1) : '-' + display);
   };
 
-  const handleBackspace = () => {
-    if (waitingForSecondOperand) return;
-    if (displayValue.length > 1) {
-      setDisplayValue(displayValue.slice(0, -1));
-    } else {
-      setDisplayValue('0');
-    }
-  };
+  const performOperation = (nextOperator: string) => {
+    triggerHaptic();
 
-  const handleOperator = (nextOperator: string) => {
-    const inputValue = parseFloat(displayValue);
+    let current = display.trim();
+    const lastChar = current.slice(-1);
 
-    if (firstOperand === null) {
-      setFirstOperand(inputValue);
-    } else if (operator) {
-      const result = calculate(firstOperand, inputValue, operator);
-      setFirstOperand(result);
-      setDisplayValue(String(result));
+    if (['+', '-', '×', '÷'].includes(lastChar)) {
+      current = current.slice(0, -1).trim();
     }
 
-    setWaitingForSecondOperand(true);
-    setOperator(nextOperator);
-    setHistory(`${displayValue} ${nextOperator}`);
+    setDisplay(current + ' ' + nextOperator + ' ');
   };
 
   const handleScientific = (func: string) => {
-    const current = parseFloat(displayValue);
+    triggerHaptic();
+    if (func === '(' || func === ')') {
+      setDisplay(display === '0' ? func : display + func);
+      return;
+    }
+
+    const current = parseFloat(display);
     let result = current;
-    let label = '';
 
-    if (func === 'sqrt') {
-      result = current >= 0 ? Math.sqrt(current) : 0;
-      label = `√(${current})`;
-    } else if (func === 'fraction') {
-      result = current !== 0 ? 1 / current : 0;
-      label = `1/(${current})`;
-    } else if (func === 'square') {
-      result = current * current;
-      label = `sqr(${current})`;
+    switch (func) {
+      case 'square': result = current * current; break;
+      case 'sqrt':
+        if (current < 0) { setDisplay('Error'); return; }
+        result = Math.sqrt(current);
+        break;
+      case 'reciprocal':
+        if (current === 0) { setDisplay('Error'); return; }
+        result = 1 / current;
+        break;
     }
 
-    setDisplayValue(String(result));
-    setHistory(label);
-    setWaitingForSecondOperand(true);
+    setDisplay(String(parseFloat(result.toFixed(8))));
   };
 
-  const calculate = (first: number, second: number, op: string) => {
-    switch (op) {
-      case '+': return first + second;
-      case '-': return first - second;
-      case '×': return first * second;
-      case '÷': return second !== 0 ? first / second : 0;
-      case '%': return (first * second) / 100;
-      default: return second;
+  const handlePercent = () => {
+    triggerHaptic();
+    const current = parseFloat(display);
+    setDisplay(String(current / 100));
+  };
+
+  const handleEqual = () => {
+    triggerHaptic();
+
+    if (!display) return;
+
+    let fullExpressionText = display.trim();
+
+    const lastChar = fullExpressionText.slice(-1);
+    if (['+', '-', '×', '÷'].includes(lastChar)) {
+      fullExpressionText = fullExpressionText.slice(0, -1).trim();
+    }
+
+    try {
+      const sanitizedExpression = fullExpressionText
+        .replace(/×/g, '*')
+        .replace(/÷/g, '/');
+
+      const result = evaluateMathExpression(sanitizedExpression);
+
+      if (!isFinite(result)) {
+        setDisplay('Error');
+        setExpression('');
+        return;
+      }
+
+      const formattedResult = String(parseFloat(result.toFixed(8)));
+
+      setExpression(`${fullExpressionText} =`);
+      setDisplay(formattedResult);
+    } catch (e) {
+      setDisplay('Error');
     }
   };
 
-  const handleEquals = () => {
-    const inputValue = parseFloat(displayValue);
+  const evaluateMathExpression = (expr: string) => {
+    const tokens = expr.trim().split(/\s+/);
+    if (tokens.length === 0) return 0;
 
-    if (operator && firstOperand !== null) {
-      const result = calculate(firstOperand, inputValue, operator);
-      setHistory(`${firstOperand} ${operator} ${inputValue} =`);
-      setDisplayValue(String(result));
-      setFirstOperand(null);
-      setOperator(null);
-      setWaitingForSecondOperand(false);
+    let total = parseFloat(tokens[0]);
+
+    for (let i = 1; i < tokens.length; i += 2) {
+      const op = tokens[i];
+      const nextNum = parseFloat(tokens[i + 1]);
+
+      if (isNaN(nextNum)) break;
+
+      switch (op) {
+        case '+': total += nextNum; break;
+        case '-': total -= nextNum; break;
+        case '*': total *= nextNum; break;
+        case '/': 
+          if (nextNum === 0) throw new Error('Division by zero');
+          total /= nextNum; 
+          break;
+      }
     }
+    return total;
   };
 
   return {
-    displayValue,
-    history,
-    handleNumber,
-    handleDecimal,
-    handleClear,
-    handleBackspace,
-    handleOperator,
+    display,
+    expression,
+    inputDigit,
+    inputDecimal,
+    performOperation,
+    clearAll,
+    clearEntry,
+    backspace,
+    handleEqual,
     handleScientific,
-    handleEquals,
+    toggleSign,
+    handlePercent,
   };
 }

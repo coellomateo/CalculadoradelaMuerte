@@ -1,32 +1,46 @@
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, ViewStyle } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity } from 'react-native';
 
 interface BotonProps {
   text: string;
   onPress: () => void;
   type?: 'number' | 'operator' | 'action' | 'equal';
-  style?: ViewStyle;
+  colorFondo?: string;
+  colorTexto?: string; 
 }
 
-export function Boton({ text, onPress, type = 'number', style }: BotonProps) {
+export function Boton({ text, onPress, type = 'number', colorFondo, colorTexto }: BotonProps) {
   const getButtonStyle = () => {
     switch (type) {
-      case 'operator': return { bg: '#B45309', border: '#F59E0B' }; // Naranja oro pirata
-      case 'equal': return { bg: '#DC2626', border: '#EF4444' };    // Rojo Akuma no Mi
-      case 'action': return { bg: '#334155', border: '#475569' };    // Gris acero naval
-      default: return { bg: '#1E293B', border: '#334155' };          // Fondo oscuro clásico
+      case 'operator': return styles.btnOp;
+      case 'action': return styles.btnAction;
+      case 'equal': return styles.btnEqual;
+      default: return styles.btnNum;
     }
   };
 
-  const currentStyle = getButtonStyle();
+  const getTextStyle = () => {
+    switch (type) {
+      case 'operator': return styles.btnTextOp;
+      case 'action': return styles.btnTextRed;
+      case 'equal': return styles.btnTextEqual;
+      default: return styles.btnText;
+    }
+  };
 
   return (
-    <TouchableOpacity
-      style={[styles.button, { backgroundColor: currentStyle.bg, borderColor: currentStyle.border }, style]}
+    <TouchableOpacity 
+      style={[
+        styles.button, 
+        getButtonStyle(), 
+        colorFondo ? { backgroundColor: colorFondo } : null
+      ]} 
+      onPress={onPress} 
       activeOpacity={0.7}
-      onPress={onPress}
     >
-      <Text style={[styles.buttonText, type === 'equal' && styles.equalText]}>{text}</Text>
+      {/* <--- 2. Añades colorTexto aquí en el estilo del texto */}
+      <Text style={[getTextStyle(), colorTexto ? { color: colorTexto } : null]}>
+        {text}
+      </Text>
     </TouchableOpacity>
   );
 }
@@ -40,17 +54,13 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1.5,
-    elevation: 4,
   },
-  buttonText: {
-    color: '#F8FAFC',
-    fontSize: 22,
-    fontWeight: '600',
-  },
-  equalText: {
-    color: '#FFFFFF',
-    fontWeight: '900',
-    fontSize: 26,
-  },
+  btnNum: { backgroundColor: '#202024' },
+  btnOp: { backgroundColor: '#29292e' },
+  btnAction: { backgroundColor: '#323238' },
+  btnEqual: { backgroundColor: '#00b37e' },
+  btnText: { color: '#fff', fontSize: 22, fontWeight: '600' },
+  btnTextOp: { color: '#00b37e', fontSize: 22, fontWeight: 'bold' },
+  btnTextRed: { color: '#f75a68', fontSize: 18, fontWeight: 'bold' },
+  btnTextEqual: { color: '#fff', fontSize: 26, fontWeight: 'bold' },
 });
