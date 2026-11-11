@@ -7,33 +7,38 @@ import { useCalculator } from '@/hooks/useCalculator';
 
 export default function CalculatorScreen() {
   const {
-    displayValue,
-    history,
-    handleNumber,
-    handleDecimal,
-    handleClear,
-    handleBackspace,
-    handleOperator,
+    display,
+    expression,
+    inputDigit,
+    inputDecimal,
+    performOperation,
+    clearAll,
+    clearEntry,
+    backspace,
+    handleEqual,
     handleScientific,
-    handleEquals,
+    toggleSign,
+    handlePercent,
   } = useCalculator();
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Insignia y diseño superior de Luffy y los Sombrero de Paja */}
       <LuffyHeader />
 
       <View style={styles.calculatorContainer}>
-        <Display value={displayValue} history={history} />
+        <Display value={display} history={expression} />
         
         <RejillaBotones
-          onPressNumber={handleNumber}
-          onPressOperator={handleOperator}
-          onPressClear={handleClear}
-          onPressBackspace={handleBackspace}
-          onPressEquals={handleEquals}
-          onPressDecimal={handleDecimal}
+          onPressNumber={inputDigit}
+          onPressOperator={performOperation}
+          onPressClear={clearAll}
+          onPressClearEntry={clearEntry}
+          onPressBackspace={backspace}
+          onPressEquals={handleEqual}
+          onPressDecimal={inputDecimal}
           onPressScientific={handleScientific}
+          onPressSign={toggleSign}
+          onPressPercent={handlePercent}
         />
       </View>
     </SafeAreaView>
@@ -44,11 +49,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#020617',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     paddingVertical: 10,
   },
   calculatorContainer: {
-    padding: 16,
+    padding: 12,
     width: '100%',
     maxWidth: 420,
     alignSelf: 'center',

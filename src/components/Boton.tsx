@@ -1,56 +1,60 @@
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, ViewStyle } from 'react-native';
+import { TouchableOpacity, Text, StyleSheet } from 'react-native';
 
 interface BotonProps {
-  text: string;
+  label: string;
   onPress: () => void;
-  type?: 'number' | 'operator' | 'action' | 'equal';
-  style?: ViewStyle;
+  type?: 'number' | 'operator' | 'scientific' | 'equals' | 'clear';
 }
 
-export function Boton({ text, onPress, type = 'number', style }: BotonProps) {
+export const Boton = ({ label, onPress, type = 'number' }: BotonProps) => {
   const getButtonStyle = () => {
     switch (type) {
-      case 'operator': return { bg: '#B45309', border: '#F59E0B' }; // Naranja oro pirata
-      case 'equal': return { bg: '#DC2626', border: '#EF4444' };    // Rojo Akuma no Mi
-      case 'action': return { bg: '#334155', border: '#475569' };    // Gris acero naval
-      default: return { bg: '#1E293B', border: '#334155' };          // Fondo oscuro clásico
+      case 'operator': return styles.operatorButton;
+      case 'equals': return styles.equalsButton;
+      case 'clear': return styles.clearButton;
+      case 'scientific': return styles.scientificButton;
+      default: return styles.numberButton;
     }
   };
 
-  const currentStyle = getButtonStyle();
-
   return (
-    <TouchableOpacity
-      style={[styles.button, { backgroundColor: currentStyle.bg, borderColor: currentStyle.border }, style]}
-      activeOpacity={0.7}
-      onPress={onPress}
-    >
-      <Text style={[styles.buttonText, type === 'equal' && styles.equalText]}>{text}</Text>
+    <TouchableOpacity style={[styles.button, getButtonStyle()]} onPress={onPress} activeOpacity={0.7}>
+      <Text style={styles.text}>{label}</Text>
     </TouchableOpacity>
   );
-}
+};
 
 const styles = StyleSheet.create({
   button: {
     flex: 1,
-    aspectRatio: 1,
-    maxHeight: 68,
     margin: 4,
-    borderRadius: 16,
+    height: 52,
+    borderRadius: 12,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1.5,
-    elevation: 4,
+    elevation: 2,
   },
-  buttonText: {
-    color: '#F8FAFC',
-    fontSize: 22,
+  numberButton: {
+    backgroundColor: '#1E293B',
+  },
+  operatorButton: {
+    backgroundColor: '#334155',
+  },
+  scientificButton: {
+    backgroundColor: '#0F172A',
+    borderWidth: 1,
+    borderColor: '#334155',
+  },
+  equalsButton: {
+    backgroundColor: '#0D9488',
+  },
+  clearButton: {
+    backgroundColor: '#EF4444',
+  },
+  text: {
+    fontSize: 18,
     fontWeight: '600',
-  },
-  equalText: {
     color: '#FFFFFF',
-    fontWeight: '900',
-    fontSize: 26,
   },
 });
